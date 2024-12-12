@@ -1,8 +1,10 @@
 const express = require("express");
-// const bodyParser = require('body-parser');
-// const flash = require('express-flash');
-// const cookieParser = require('cookie-parser');
-// const session = require('express-session');
+const bodyParser = require('body-parser');
+
+const flash = require('express-flash');
+const cookieParser = require('cookie-parser');
+const session = require('express-session');
+
 // const methodOverride = require('method-override');
 const path = require('path');
 require('dotenv').config();
@@ -35,20 +37,18 @@ app.use(express.static(`${__dirname}/public`)); // Thiết lập thư mục ch�
 app.locals.prefixAdmin = systemConfig.prefixAdmin;
 
 // parse application/json
-// app.use(bodyParser.json());
-// // parse application/x-www-form-urlencoded
-// app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }));
 
-// app.use(cookieParser('MINHHOA-FLASH'));
-// app.use(session({ cookie: { maxAge: 60000 }}));
-// app.use(flash());
+app.use(cookieParser('MINHHOA-FLASH'));
+app.use(session({ cookie: { maxAge: 60000 }}));
+app.use(flash());
 
+// Khai báo biến toàn cục cho file js backend
+global._io = io;
 
 routes(app);
-
-io.on("connection", (socket) => {
-    console.log("Có 1 user kết nối!", socket.id);
-});
 
 
 server.listen(port, () => {
