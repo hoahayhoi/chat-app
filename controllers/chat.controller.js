@@ -11,7 +11,6 @@ module.exports.index = async (req, res) => {
 
             for (const item of data.images) {
               const result = await streamUploadHelper.streamUpload(item);
-              console.log(result.url);
               images.push(result.url);
             }
 
