@@ -20,7 +20,16 @@ module.exports.index = async (req, res) => {
                 userId: res.locals.user.id,
                 fullName: res.locals.user.fullName,
                 content: data.content
-            })            
+            })
+        })
+
+        // CLIENT_SEND_TYPING
+        socket.on("CLIENT_SEND_TYPING", (type) => {
+            socket.broadcast.emit("SERVER_RETURN_TYPING", {
+                userId: res.locals.user.id,
+                fullName: res.locals.user.fullName,
+                type: type
+            })
         })
     });
 
