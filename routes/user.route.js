@@ -36,4 +36,10 @@ router.get(
   controller.request
 );
 
+router.get(
+  "/accept",
+  userMiddleware.requireAuth,
+  controller.accept
+);
+
 module.exports = router;

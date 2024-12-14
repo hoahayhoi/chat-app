@@ -253,7 +253,7 @@ module.exports.notFriend = async (req, res) => {
 
 module.exports.request = async (req, res) => { 
   const userIdA = res.locals.user.id;
-  // Khi A gửi yêu cầu cho B
+  // Khi A huỷ gửi yêu cầu cho B
 
   _io.once("connection", (socket) => {
     socket.on("CLIENT_CANCEL_FRIEND", async (userIdB) => {
@@ -276,7 +276,7 @@ module.exports.request = async (req, res) => {
         _id: userIdA,
         requestFriends: userIdB
       });
-      
+
       if(existBInA) {
         await User.updateOne({
           _id: userIdA
@@ -298,3 +298,51 @@ module.exports.request = async (req, res) => {
     users: users
   });
 }
+
+module.exports.accept = async (req, res) => { 
+  const userIdA = res.locals.user.id;
+
+  _io.once("connection", (socket) => {
+    // Khi A từ chối kết bạn của B 
+    socket.on("CLIENT_REFUSE_FRIEND", async (userIdB) => {
+      // Xoá B ra khỏi acceptFriends của A 
+      const existBInA = await User.findOne({
+        _id: userIdA,
+        acceptFriends: userIdB
+      });
+
+      if(existBInA) {
+        await User.updateOne({
+          _id: userIdA
+        }, {
+          $pull: { acceptFriends: userIdB }
+        });
+      }
+
+      // Xoá id của A ra khỏi requestFriends của B 
+      const existAInB = await User.findOne({
+        _id: userIdB,
+        requestFriends: userIdA
+      });
+
+      if(existAInB){
+        await User.updateOne({
+          _id: userIdB
+        }, {
+          $pull: { requestFriends: userIdA }
+        });
+      }
+    });
+  });
+
+  const users = await User.find({
+    _id: { $in: res.locals.user.acceptFriends }, 
+    deleted: false,
+    status: "active"
+  }).select("id fullName avatar");
+
+  res.render("pages/user/accept", {
+    pageTitle: "Lời mời đã nhận",
+    users: users
+  });
+};
