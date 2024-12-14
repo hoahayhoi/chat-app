@@ -24,4 +24,10 @@ router.get(
   controller.profile
 );
 
+router.get(
+  "/not-friend",
+  userMiddleware.requireAuth,
+  controller.notFriend
+);
+
 module.exports = router;

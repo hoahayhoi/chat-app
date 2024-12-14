@@ -18,7 +18,7 @@ module.exports.registerPost = async (req, res) => {
     deleted: false
   });
 
-  if(existUser) {
+  if (existUser) {
     req.flash("error", "Email đã tồn tại trong hệ thống!");
     res.redirect("back");
     return;
@@ -31,7 +31,7 @@ module.exports.registerPost = async (req, res) => {
     token: generateHelper.generateRandomString(30),
     status: "active"
   };
-  
+
   const newUser = new User(dataUser);
   await newUser.save();
 
@@ -56,24 +56,24 @@ module.exports.loginPost = async (req, res) => {
     deleted: false
   });
 
-  if(!existUser) {
+  if (!existUser) {
     req.flash("error", "Email không tồn tại trong hệ thống!");
     res.redirect("back");
     return;
   }
 
-  if(md5(password) != existUser.password) {
+  if (md5(password) != existUser.password) {
     req.flash("error", "Sai mật khẩu!");
     res.redirect("back");
     return;
   }
 
-  if(existUser.status != "active") {
+  if (existUser.status != "active") {
     req.flash("error", "Tài khoản đang bị khóa!");
     res.redirect("back");
     return;
   }
-  
+
   res.cookie("tokenUser", existUser.token);
   req.flash("success", "Đăng nhập thành công!");
 
@@ -102,7 +102,7 @@ module.exports.forgotPasswordPost = async (req, res) => {
     deleted: false
   });
 
-  if(!existUser) {
+  if (!existUser) {
     req.flash("error", "Email không tồn tại!");
     res.redirect("back");
     return;
@@ -113,17 +113,17 @@ module.exports.forgotPasswordPost = async (req, res) => {
     email: email
   });
 
-  if(!existEmailInForgotPassword) {
+  if (!existEmailInForgotPassword) {
     const otp = generateHelper.generateRandomNumber(6);
     const data = {
       email: email,
       otp: otp,
-      expireAt: Date.now() + 5*60*1000
+      expireAt: Date.now() + 5 * 60 * 1000
     };
-  
+
     const record = new ForgotPassword(data);
     await record.save();
-  
+
     // Việc 2: Gửi mã OTP qua email cho user
     const subject = "Xác thực mã OTP";
     const text = `Mã xác thực của bạn là <b>${otp}</b>. Mã OTP có hiệu lực trong vòng 5 phút, vui lòng không cung cấp mã OTP cho bất kỳ ai.`;
@@ -152,12 +152,12 @@ module.exports.otpPasswordPost = async (req, res) => {
     otp: otp
   });
 
-  if(!existRecord) {
+  if (!existRecord) {
     req.flash("error", "Mã OTP không hợp lệ!");
     res.redirect("back");
     return;
   }
-  
+
   const user = await User.findOne({
     email: email
   });
@@ -192,5 +192,23 @@ module.exports.resetPasswordPost = async (req, res) => {
 module.exports.profile = async (req, res) => {
   res.render("pages/user/profile", {
     pageTitle: "Thông tin tài khoản",
+  });
+};
+
+
+module.exports.notFriend = async (req, res) => {
+  const userId = res.locals.user.id;
+
+  const users = await User.find({
+    _id: { $ne: userId },
+    deleted: false,
+    status: "active"
+  }).select("id fullName avatar");
+
+  console.log(users);
+
+  res.render("pages/user/not-friend", {
+    pageTitle: "Danh sách người dùng",
+    users: users
   });
 };
