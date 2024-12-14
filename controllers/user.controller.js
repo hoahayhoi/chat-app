@@ -197,18 +197,55 @@ module.exports.profile = async (req, res) => {
 
 
 module.exports.notFriend = async (req, res) => {
-  const userId = res.locals.user.id;
+  const userIdA = res.locals.user.id;
+
+  _io.once("connection", (socket) => {
+    // Khi A gửi yêu cầu cho B
+    socket.on("CLIENT_ADD_FRIEND", async (userIdB) => {
+      // Thêm Id của A vào acceptFriends của B
+      const existAInB = await User.findOne({
+        _id: userIdB,
+        acceptFriends: userIdA
+      });
+
+      if(!existAInB) {
+        await User.updateOne({
+          _id: userIdB
+        }, {
+          $push: { acceptFriends: userIdA }
+        });
+      }
+
+      // Thêm id của B vào requestFriend của A 
+      const existBInA  = await User.findOne({
+        _id: userIdA, 
+        requestFriends: userIdB
+      });
+
+      if (!existBInA) {
+        await User.updateOne({
+          _id: userIdA
+        }, {
+          $push: {requestFriends: userIdB}
+        });
+      }
+    });
+  });
 
   const users = await User.find({
-    _id: { $ne: userId },
-    deleted: false,
-    status: "active"
+      $and: [
+        {_id: { $ne: userIdA }},
+        { _id: { $nin: res.locals.user.requestFriends } },
+        { _id: { $nin: res.locals.user.acceptFriends } }
+      ],
+      deleted: false,
+      status: "active"
   }).select("id fullName avatar");
 
-  console.log(users);
 
   res.render("pages/user/not-friend", {
-    pageTitle: "Danh sách người dùng",
-    users: users
+      pageTitle: "Danh sách người dùng",
+      users: users
   });
-};
+
+}
