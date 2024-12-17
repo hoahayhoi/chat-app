@@ -219,7 +219,7 @@ socket.on("SERVER_RETURN_INFO_ACCEPT_FRIENDS", (data) => {
   if (listAcceptFriends) {
     const newUser = document.createElement("div");
     newUser.classList.add("col-6");
-    newUser.setAttribute("user-id", data.userIdA);  
+    newUser.setAttribute("user-id", data.userIdA);
     newUser.innerHTML = `
       <div class="box-user">
         <div class="inner-avatar">
@@ -274,6 +274,16 @@ socket.on("SERVER_RETURN_INFO_ACCEPT_FRIENDS", (data) => {
       socket.emit("CLIENT_REFUSE_FRIEND", data.userIdA);
     })
   }
+  
+  // Xóa A khỏi danh sách người dùng của B
+  const listNotFriends = document.querySelector(`[list-not-friends="${data.userIdB}"]`);
+  if (listNotFriends) {
+    const userA = listNotFriends.querySelector(`[user-id="${data.userIdA}"]`);
+    if (userA) {
+      listNotFriends.removeChild(userA);
+    }
+  }
+
 })
 // End SERVER_RETURN_INFO_ACCEPT_FRIENDS
 
@@ -282,9 +292,9 @@ socket.on("SERVER_RETURN_USER_ID_CANCEL_FRIEND", (data) => {
   // userIdB để tìm vào danh sách của B
   // userIdA để xóa A khỏi giao diện của B
   const listAcceptFriends = document.querySelector(`[list-accept-friends="${data.userIdB}"]`);
-  if(listAcceptFriends) {
+  if (listAcceptFriends) {
     const userA = listAcceptFriends.querySelector(`[user-id="${data.userIdA}"]`);
-    if(userA) {
+    if (userA) {
       listAcceptFriends.removeChild(userA);
     }
   }
