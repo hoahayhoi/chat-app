@@ -41,7 +41,7 @@ module.exports = (req, res) => {
                 userIdB: userIdB,
                 length: userB.acceptFriends.length
             })
-            
+
             // Trả về cho B thông tin của A
             _io.emit("SERVER_RETURN_INFO_ACCEPT_FRIENDS", {
                 userIdA: userIdA,
@@ -77,6 +77,7 @@ module.exports = (req, res) => {
                     $pull: { requestFriends: userIdB }
                 });
             }
+            
             // Trả về cho B số lượng user cần chấp nhận
             const userB = await User.findOne({
                 _id: userIdB,
@@ -87,6 +88,12 @@ module.exports = (req, res) => {
                 userIdB: userIdB,
                 length: userB.acceptFriends.length
             })
+
+            // Trả về cho B userIdA để xóa A khỏi giao diện
+            _io.emit("SERVER_RETURN_USER_ID_CANCEL_FRIEND", {
+                userIdB: userIdB,
+                userIdA: userIdA
+            })            
         })
 
         // Khi A từ chối kết bạn của B
