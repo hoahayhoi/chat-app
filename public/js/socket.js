@@ -16,7 +16,7 @@ if (formChat) {
 
     const content = formChat.content.value;
     const images = upload.cachedFileArray || [];
-    
+
     if (content || images.length > 0) {
       const data = {
         content: content,
@@ -48,20 +48,20 @@ socket.on("SERVER_RETURN_MESSAGE", (data) => {
   }
 
   let htmlContent = "";
-  if(data.content) {
+  if (data.content) {
     htmlContent = `
       <div class="inner-content">${data.content}</div>
     `;
   }
   let htmlImages = "";
-  if(data.images.length > 0) {
+  if (data.images.length > 0) {
     htmlImages += `<div class="inner-images">`;
     for (const image of data.images) {
       htmlImages += `<img src="${image}" />`;
     }
     htmlImages += `</div>`;
   }
-  
+
   div.innerHTML = `
     ${htmlContent}
     ${htmlImages}
@@ -72,7 +72,7 @@ socket.on("SERVER_RETURN_MESSAGE", (data) => {
   socket.emit("CLIENT_SEND_TYPING", false);
 
   body.scrollTop = body.scrollHeight;
-  new Viewer(div);  
+  new Viewer(div);
 })
 // End SERVER_RETURN_MESSAGE
 
@@ -150,7 +150,7 @@ if (elementListTyping) {
 
 // Send Request Friend 
 const listBtnAddFriend = document.querySelectorAll("[btn-add-friend]");
-if(listBtnAddFriend.length > 0) {
+if (listBtnAddFriend.length > 0) {
   listBtnAddFriend.forEach(button => {
     button.addEventListener("click", () => {
       const userIdB = button.getAttribute("btn-add-friend");
@@ -164,7 +164,7 @@ if(listBtnAddFriend.length > 0) {
 
 // Cancel send friendRequest
 const listBtnCancelFriend = document.querySelectorAll("[btn-cancel-friend]");
-if(listBtnCancelFriend.length > 0) {
+if (listBtnCancelFriend.length > 0) {
   listBtnCancelFriend.forEach(button => {
     button.addEventListener("click", () => {
       const userIdB = button.getAttribute("btn-cancel-friend");
@@ -178,7 +178,7 @@ if(listBtnCancelFriend.length > 0) {
 
 // Refuse friendRequest
 const listBtnRefuseFriend = document.querySelectorAll("[btn-refuse-friend]");
-if(listBtnRefuseFriend.length > 0) {
+if (listBtnRefuseFriend.length > 0) {
   listBtnRefuseFriend.forEach(button => {
     button.addEventListener("click", () => {
       const userIdB = button.getAttribute("btn-refuse-friend");
@@ -192,7 +192,7 @@ if(listBtnRefuseFriend.length > 0) {
 // Chức năng chấp nhận kết bạn
 const listBtnAcceptFriend = document.querySelectorAll("[btn-accept-friend]");
 
-if(listBtnAcceptFriend.length > 0) {
+if (listBtnAcceptFriend.length > 0) {
   listBtnAcceptFriend.forEach(button => {
     button.addEventListener("click", () => {
       const userIdB = button.getAttribute("btn-accept-friend");
@@ -207,8 +207,71 @@ if(listBtnAcceptFriend.length > 0) {
 // SERVER_RETURN_LENGTH_ACCEPT_FRIENDS
 socket.on("SERVER_RETURN_LENGTH_ACCEPT_FRIENDS", (data) => {
   const badgeUserAccept = document.querySelector(`[badge-user-accept="${data.userIdB}"]`);
-  if(badgeUserAccept) {
+  if (badgeUserAccept) {
     badgeUserAccept.innerHTML = data.length;
   }
 });
 // End SERVER_RETURN_LENGTH_ACCEPT_FRIENDS
+
+// SERVER_RETURN_INFO_ACCEPT_FRIENDS
+socket.on("SERVER_RETURN_INFO_ACCEPT_FRIENDS", (data) => {
+  const listAcceptFriends = document.querySelector(`[list-accept-friends="${data.userIdB}"]`);
+  if (listAcceptFriends) {
+    const newUser = document.createElement("div");
+    newUser.classList.add("col-6");
+    newUser.innerHTML = `
+      <div class="box-user">
+        <div class="inner-avatar">
+          <img src="https://robohash.org/hicveldicta.png" alt="${data.fullNameA}" />
+        </div>
+        <div class="inner-info">
+          <div class="inner-name">${data.fullNameA}</div>
+          <div class="inner-buttons">
+            <button 
+              class="btn btn-sm btn-primary mr-1"
+              btn-accept-friend="${data.userIdA}"
+            >
+              Chấp nhận
+            </button>
+            <button
+              class="btn btn-sm btn-secondary mr-1"
+              btn-refuse-friend="${data.userIdA}"
+            >
+              Xóa
+            </button>
+            <button 
+              class="btn btn-sm btn-secondary mr-1" 
+              btn-deleted-friend="" 
+              disabled=""
+            >
+              Đã xóa
+            </button>
+            <button 
+              class="btn btn-sm btn-primary mr-1" 
+              btn-accepted-friend="" 
+              disabled=""
+            >
+              Đã chấp nhận
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+    listAcceptFriends.appendChild(newUser);
+
+    // Chấp nhận kết bạn
+    const btnAcceptFriend = newUser.querySelector("[btn-accept-friend]");
+    btnAcceptFriend.addEventListener("click", () => {
+      btnAcceptFriend.closest(".box-user").classList.add("accepted");
+      socket.emit("CLIENT_ACCEPT_FRIEND", data.userIdA);
+    })
+    
+    // Không chấp nhận kết bạn
+    const btnRefuseFriend = newUser.querySelector("[btn-refuse-friend]");
+    btnRefuseFriend.addEventListener("click", () => {
+      btnRefuseFriend.closest(".box-user").classList.add("refuse");
+      socket.emit("CLIENT_REFUSE_FRIEND", data.userIdA);
+    })
+  }
+})
+// End SERVER_RETURN_INFO_ACCEPT_FRIENDS
