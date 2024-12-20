@@ -229,29 +229,29 @@ module.exports.notFriend = async (req, res) => {
   const userIdA = res.locals.user.id;
 
   const friendsList = res.locals.user.friendsList;
-  const friendsListId = friendsList.map(item => item.userId);  
+  const friendsListId = friendsList.map(item => item.userId);
 
   const users = await User.find({
-      $and: [
-        {_id: { $ne: userIdA }},
-        { _id: { $nin: res.locals.user.requestFriends } },
-        { _id: { $nin: res.locals.user.acceptFriends } },
-        { _id: { $nin: friendsListId } }
-      ],
-      deleted: false,
-      status: "active"
+    $and: [
+      { _id: { $ne: userIdA } },
+      { _id: { $nin: res.locals.user.requestFriends } },
+      { _id: { $nin: res.locals.user.acceptFriends } },
+      { _id: { $nin: friendsListId } }
+    ],
+    deleted: false,
+    status: "active"
   }).select("id fullName avatar");
 
 
   res.render("pages/user/not-friend", {
-      pageTitle: "Danh sách người dùng",
-      users: users
+    pageTitle: "Danh sách người dùng",
+    users: users
   });
 
 }
 
 
-module.exports.request = async (req, res) => { 
+module.exports.request = async (req, res) => {
   userSocket(req, res);
 
   const users = await User.find({
@@ -266,11 +266,11 @@ module.exports.request = async (req, res) => {
   });
 }
 
-module.exports.accept = async (req, res) => { 
+module.exports.accept = async (req, res) => {
   userSocket(req, res);
 
   const users = await User.find({
-    _id: { $in: res.locals.user.acceptFriends }, 
+    _id: { $in: res.locals.user.acceptFriends },
     deleted: false,
     status: "active"
   }).select("id fullName avatar");
@@ -288,14 +288,14 @@ module.exports.friends = async (req, res) => {
 
   for (const user of friendsList) {
     const infoUser = await User.findOne({
-      _id: user.userId, 
+      _id: user.userId,
       deleted: false,
       status: "active"
     });
 
     users.push({
       id: infoUser.id,
-      fullName: infoUser.fullName, 
+      fullName: infoUser.fullName,
       avatar: infoUser.avatar,
       statusOnline: infoUser.statusOnline,
       roomChatId: user.roomChatId
@@ -307,4 +307,11 @@ module.exports.friends = async (req, res) => {
     pageTitle: "Danh sách bạn bè",
     users: users
   });
-} 
+}
+
+
+module.exports.rooms = async (req, res) => {
+  res.render("pages/user/rooms", {
+    pageTitle: "Phòng chat"
+  });
+};

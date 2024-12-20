@@ -8,10 +8,12 @@ module.exports.isAccess = async (req, res, next) => {
         const roomChat = await RoomChat.findOne({
             _id: roomChatId
         });
+
         if (!roomChat) {
             res.redirect("/");
             return;
         }
+        
         const existUserInRoomChat = roomChat.users.find(item => item.userId == userId);
         if (!existUserInRoomChat) {
             res.redirect("/");
